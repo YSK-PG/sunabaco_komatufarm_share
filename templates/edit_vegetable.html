@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>商品編集</title>
+</head>
+<body>
+    <h1>商品を編集</h1>
+    <form method="POST">
+        <label>名前：</label><input type="text" name="name" value="{{ vegetable.name }}" required><br>
+        <label>価格：</label><input type="number" name="price" value="{{ vegetable.price }}" required><br>
+        <label>説明：</label><input type="text" name="description" value="{{ vegetable.description }}"><br>
+        <label>在庫：</label><input type="number" name="stock" value="{{ vegetable.stock }}" required><br>
+        <button type="submit">更新</button>
+    </form>
+</body>
+</html>

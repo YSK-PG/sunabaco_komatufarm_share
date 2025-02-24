@@ -1,0 +1,87 @@
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vegetable_app2.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# データベースのモデル定義
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(20), nullable=False)  # '生産者' or '社員'
+
+class Vegetables(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    stock = db.Column(db.Integer, nullable=False)
+    producer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+class Orders(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    vegetable_id = db.Column(db.Integer, db.ForeignKey('vegetables.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    order_date = db.Column(db.String(100), nullable=False)
+
+# データベースのテーブルを作成
+with app.app_context():
+    db.create_all()
+
+# 商品一覧の表示
+@app.route('/')
+def index():
+    vegetables = Vegetables.query.all()
+    return render_template('index.html', vegetables=vegetables)
+
+# 商品の登録
+@app.route('/add', methods=['GET', 'POST'])
+def add_vegetable():
+    if request.method == 'POST':
+        name = request.form['name']
+        price = request.form['price']
+        description = request.form['description']
+        stock = request.form['stock']
+        producer_id = request.form['producer_id']
+
+        new_vegetable = Vegetables(name=name, price=price, description=description, stock=stock, producer_id=producer_id)
+        db.session.add(new_vegetable)
+        db.session.commit()
+        flash('商品が登録されました！', 'success')
+        return redirect(url_for('index'))
+    
+    return render_template('add_vegetable.html')
+
+# 商品の編集
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit_vegetable(id):
+    vegetable = Vegetables.query.get(id)
+    if request.method == 'POST':
+        vegetable.name = request.form['name']
+        vegetable.price = request.form['price']
+        vegetable.description = request.form['description']
+        vegetable.stock = request.form['stock']
+        db.session.commit()
+        flash('商品が更新されました！', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('edit_vegetable.html', vegetable=vegetable)
+
+# 商品の削除
+@app.route('/delete/<int:id>', methods=['POST'])
+def delete_vegetable(id):
+    vegetable = Vegetables.query.get(id)
+    db.session.delete(vegetable)
+    db.session.commit()
+    flash('商品が削除されました！', 'danger')
+    return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
