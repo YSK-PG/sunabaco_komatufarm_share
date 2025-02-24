@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>注文履歴</title>
+</head>
+<body>
+    <h1>注文履歴</h1>
+    <table border="1">
+        <tr>
+            <th>注文ID</th>
+            <th>社員番号</th>
+            <th>名前</th>
+            <th>商品ID</th>
+            <th>購入数</th>
+            <th>注文日時</th>
+        </tr>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.employee_id }}</td>
+            <td>{{ order.name }}</td>
+            <td>{{ order.vegetable_id }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>{{ order.order_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

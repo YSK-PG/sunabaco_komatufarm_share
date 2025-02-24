@@ -20,16 +20,26 @@
             <td>{{ vegetable.name }}</td>
             <td>{{ vegetable.price }}</td>
             <td>{{ vegetable.description }}</td>
-            <td>{{ vegetable.stock }}</td>
             <td>
-                <a href="{{ url_for('edit_vegetable', id=vegetable.id) }}">編集</a>
-                <form action="{{ url_for('delete_vegetable', id=vegetable.id) }}" method="POST" style="display:inline;">
-                    <button type="submit">削除</button>
-                </form>
+                {% if vegetable.stock > 0 %}
+                    {{ vegetable.stock }}
+                {% else %}
+                    <span style="color: red;">売り切れ</span>
+                {% endif %}
             </td>
+            <td>
+                {% if vegetable.stock > 0 %}
+                    <a href="{{ url_for('order_vegetable', vegetable_id=vegetable.id) }}">注文</a>
+                {% else %}
+                    <span style="color: gray;">注文不可</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">商品がありません。商品を追加してください。</td>
         </tr>
         {% endfor %}
     </table>
 </body>
 </html>
-
