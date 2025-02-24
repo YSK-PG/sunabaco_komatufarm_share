@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 
+# Flaskアプリの作成
 app = Flask(__name__, template_folder="templates")
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vegetable_app2.db'
@@ -40,10 +41,6 @@ with app.app_context():
 @app.route('/')
 def index():
     vegetables = Vegetables.query.all()
-    
-    if not vegetables:
-        flash("商品データがありません！商品を追加してください。", "danger")
-    
     return render_template('index.html', vegetables=vegetables)
 
 # 商品追加ページ
@@ -70,6 +67,41 @@ def add_vegetable():
 
     return render_template('add_vegetable.html')
 
+# 商品を編集するページ
+@app.route('/edit/<int:vegetable_id>', methods=['GET', 'POST'])
+def edit_vegetable(vegetable_id):
+    vegetable = Vegetables.query.get(vegetable_id)
+
+    if vegetable is None:
+        flash("指定された商品は存在しません。", "danger")
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        vegetable.name = request.form['name']
+        vegetable.price = request.form['price']
+        vegetable.description = request.form['description']
+        vegetable.stock = request.form['stock']
+        
+        db.session.commit()
+        flash('商品情報が更新されました！', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('edit_vegetable.html', vegetable=vegetable)
+
+# 商品を削除する
+@app.route('/delete/<int:vegetable_id>', methods=['POST'])
+def delete_vegetable(vegetable_id):
+    vegetable = Vegetables.query.get(vegetable_id)
+
+    if vegetable is None:
+        flash("指定された商品は存在しません。", "danger")
+    else:
+        db.session.delete(vegetable)
+        db.session.commit()
+        flash('商品が削除されました！', 'success')
+
+    return redirect(url_for('index'))
+
 # 商品を注文するページ
 @app.route('/order/<int:vegetable_id>', methods=['GET', 'POST'])
 def order_vegetable(vegetable_id):
@@ -84,15 +116,12 @@ def order_vegetable(vegetable_id):
         name = request.form['name']
         quantity = int(request.form['quantity'])
 
-        # 在庫確認
         if vegetable.stock < quantity:
             flash('在庫が不足しています。', 'danger')
             return redirect(url_for('index'))
 
-        # 在庫を減らす
         vegetable.stock -= quantity
 
-        # 注文データを追加
         new_order = Orders(
             employee_id=employee_id,
             name=name,
@@ -113,5 +142,6 @@ def order_history():
     orders = Orders.query.all()
     return render_template('orders.html', orders=orders)
 
+# Flaskアプリの起動
 if __name__ == '__main__':
     app.run(debug=True)

@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>野菜管理アプリ</h1>
+    <a href="{{ url_for('order_history') }}">注文履歴を見る</a>
     <a href="{{ url_for('add_vegetable') }}">商品を追加</a>
     <table border="1">
         <tr>
@@ -28,6 +29,10 @@
                 {% endif %}
             </td>
             <td>
+                <a href="{{ url_for('edit_vegetable', vegetable_id=vegetable.id) }}">編集</a>
+                <form action="{{ url_for('delete_vegetable', vegetable_id=vegetable.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+                </form>
                 {% if vegetable.stock > 0 %}
                     <a href="{{ url_for('order_vegetable', vegetable_id=vegetable.id) }}">注文</a>
                 {% else %}

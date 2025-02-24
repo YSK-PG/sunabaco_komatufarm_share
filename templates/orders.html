@@ -24,7 +24,12 @@
             <td>{{ order.quantity }}</td>
             <td>{{ order.order_date }}</td>
         </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">注文履歴がありません。</td>
+        </tr>
         {% endfor %}
     </table>
+    <a href="{{ url_for('index') }}">戻る</a>
 </body>
 </html>
