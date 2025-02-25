@@ -2,34 +2,25 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>注文履歴</title>
+    <title>商品注文</title>
 </head>
 <body>
-    <h1>注文履歴</h1>
-    <table border="1">
-        <tr>
-            <th>注文ID</th>
-            <th>社員番号</th>
-            <th>名前</th>
-            <th>商品ID</th>
-            <th>購入数</th>
-            <th>注文日時</th>
-        </tr>
-        {% for order in orders %}
-        <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.employee_id }}</td>
-            <td>{{ order.name }}</td>
-            <td>{{ order.vegetable_id }}</td>
-            <td>{{ order.quantity }}</td>
-            <td>{{ order.order_date }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6">注文履歴がありません。</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h1>商品注文</h1>
+    <p>商品名: {{ vegetable.name }}</p>
+    <p>価格: {{ vegetable.price }} 円</p>
+    <p>在庫: {{ vegetable.stock }}</p>
+
+    {% if vegetable.stock > 0 %}
+    <form method="POST">
+        <label>社員番号：</label><input type="text" name="employee_id" required><br>
+        <label>名前：</label><input type="text" name="name" required><br>
+        <label>購入数：</label><input type="number" name="quantity" min="1" max="{{ vegetable.stock }}" required><br>
+        <button type="submit">注文</button>
+    </form>
+    {% else %}
+    <p style="color: red;">売り切れ</p>
+    {% endif %}
+
     <a href="{{ url_for('index') }}">戻る</a>
 </body>
 </html>
