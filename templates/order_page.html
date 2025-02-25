@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>注文ページ</title>
+</head>
+<body>
+    <h1>注文ページ（社員用）</h1>
+    <table border="1">
+        <tr>
+            <th>名前</th>
+            <th>価格</th>
+            <th>説明</th>
+            <th>在庫</th>
+            <th>操作</th>
+        </tr>
+        {% for vegetable in vegetables %}
+        <tr>
+            <td>{{ vegetable.name }}</td>
+            <td>{{ vegetable.price }}</td>
+            <td>{{ vegetable.description }}</td>
+            <td>{{ vegetable.stock }}</td>
+            <td>
+                <a href="{{ url_for('order_vegetable', vegetable_id=vegetable.id) }}">注文</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('index') }}">戻る</a>
+</body>
+</html>

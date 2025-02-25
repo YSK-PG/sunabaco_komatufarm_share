@@ -37,88 +37,106 @@ class Orders(db.Model):
 with app.app_context():
     db.create_all()
 
-# 商品一覧ページ
+# **📌 トップページ（index）**
 @app.route('/')
 def index():
-    vegetables = Vegetables.query.all()
-    return render_template('index.html', vegetables=vegetables)
+    return redirect(url_for('order_page'))  # トップページを注文ページにリダイレクト
 
-# 商品追加ページ
+# **📌 管理者ページ（生産者用）**
+@app.route('/admin')
+def admin():
+    return render_template('admin.html', vegetables=Vegetables.query.all())
+
+# **📌 商品追加機能**
 @app.route('/add', methods=['GET', 'POST'])
 def add_vegetable():
     if request.method == 'POST':
-        name = request.form['name']
-        price = request.form['price']
-        description = request.form['description']
-        stock = request.form['stock']
-        producer_id = 1  # 仮の生産者ID
+        name = request.form.get('name')
+        price = request.form.get('price')
+        description = request.form.get('description')
+        stock = request.form.get('stock')
+
+        if not name or not price or not stock:
+            flash('すべての必須項目を入力してください。', 'danger')
+            return redirect(url_for('add_vegetable'))
 
         new_vegetable = Vegetables(
-            name=name, 
-            price=price, 
-            description=description, 
-            stock=stock, 
-            producer_id=producer_id
+            name=name,
+            price=int(price),
+            description=description,
+            stock=int(stock),
+            producer_id=1  # 仮の生産者ID（適切に設定）
         )
         db.session.add(new_vegetable)
         db.session.commit()
         flash('商品が追加されました！', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('admin'))
 
     return render_template('add_vegetable.html')
 
-# 商品を編集するページ
+# **📌 商品編集機能**
 @app.route('/edit/<int:vegetable_id>', methods=['GET', 'POST'])
 def edit_vegetable(vegetable_id):
     vegetable = Vegetables.query.get(vegetable_id)
 
     if vegetable is None:
-        flash("指定された商品は存在しません。", "danger")
-        return redirect(url_for('index'))
+        flash("指定された野菜は存在しません。", "danger")
+        return redirect(url_for('admin'))
 
     if request.method == 'POST':
-        vegetable.name = request.form['name']
-        vegetable.price = request.form['price']
-        vegetable.description = request.form['description']
-        vegetable.stock = request.form['stock']
-        
+        vegetable.name = request.form.get('name')
+        vegetable.price = request.form.get('price')
+        vegetable.description = request.form.get('description')
+        vegetable.stock = request.form.get('stock')
+
         db.session.commit()
-        flash('商品情報が更新されました！', 'success')
-        return redirect(url_for('index'))
+        flash('商品が更新されました！', 'success')
+        return redirect(url_for('admin'))
 
     return render_template('edit_vegetable.html', vegetable=vegetable)
 
-# 商品を削除する
+# **📌 商品削除機能**
 @app.route('/delete/<int:vegetable_id>', methods=['POST'])
 def delete_vegetable(vegetable_id):
     vegetable = Vegetables.query.get(vegetable_id)
 
     if vegetable is None:
-        flash("指定された商品は存在しません。", "danger")
-    else:
-        db.session.delete(vegetable)
-        db.session.commit()
-        flash('商品が削除されました！', 'success')
+        flash("指定された野菜は存在しません。", "danger")
+        return redirect(url_for('admin'))
 
-    return redirect(url_for('index'))
+    db.session.delete(vegetable)
+    db.session.commit()
+    flash('商品が削除されました！', 'success')
+    return redirect(url_for('admin'))
 
-# 商品を注文するページ
+# **📌 注文ページ（社員用）**
+@app.route('/order_page')
+def order_page():
+    return render_template('order_page.html', vegetables=Vegetables.query.all())
+
+# **📌 注文機能**
 @app.route('/order/<int:vegetable_id>', methods=['GET', 'POST'])
 def order_vegetable(vegetable_id):
     vegetable = Vegetables.query.get(vegetable_id)
 
     if vegetable is None:
         flash("指定された野菜は存在しません。", "danger")
-        return redirect(url_for('index'))
+        return redirect(url_for('order_page'))
 
     if request.method == 'POST':
-        employee_id = request.form['employee_id']
-        name = request.form['name']
-        quantity = int(request.form['quantity'])
+        employee_id = request.form.get('employee_id')
+        name = request.form.get('name')
+        quantity = request.form.get('quantity')
+
+        if not employee_id or not name or not quantity:
+            flash("すべての項目を入力してください。", "danger")
+            return redirect(url_for('order_vegetable', vegetable_id=vegetable_id))
+
+        quantity = int(quantity)
 
         if vegetable.stock < quantity:
             flash('在庫が不足しています。', 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('order_vegetable', vegetable_id=vegetable_id))
 
         vegetable.stock -= quantity
 
@@ -131,15 +149,24 @@ def order_vegetable(vegetable_id):
         )
         db.session.add(new_order)
         db.session.commit()
-        flash('注文が完了しました！', 'success')
-        return redirect(url_for('index'))
+        flash('注文OK！', 'success')
+        return redirect(url_for('order_history'))
 
     return render_template('order.html', vegetable=vegetable)
 
-# 注文履歴ページ
+# **📌 注文履歴ページ**
 @app.route('/orders')
 def order_history():
-    orders = Orders.query.all()
+    orders = db.session.query(
+        Orders.id,
+        Orders.employee_id,
+        Orders.name,
+        Vegetables.name.label("vegetable_name"),
+        (Vegetables.price * Orders.quantity).label("total_price"),
+        Orders.quantity,
+        Orders.order_date
+    ).join(Vegetables, Orders.vegetable_id == Vegetables.id).all()
+
     return render_template('orders.html', orders=orders)
 
 # Flaskアプリの起動
