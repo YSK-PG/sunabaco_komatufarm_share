@@ -2,9 +2,25 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>商品登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小松農園</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
+    <!-- ヘッダー -->
+    <header class="header-footer text-white py-3">
+        <div class="container-custom d-flex justify-content-between align-items-center">
+            <h1 class="h4 mb-0">小松農園</h1>
+            <nav>
+                <a href="index.html" class="text-white me-3">TOP</a>
+                <a href="order-history.html" class="text-white me-3">注文履歴</a>
+                <a href="admin-settings.html" class="text-white">管理者</a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- 商品を追加 -->
     <h1>商品を追加</h1>
     <form method="POST">
         <label>名前：</label><input type="text" name="name" required><br>
@@ -14,5 +30,14 @@
         <button type="submit">登録</button>
     </form>
     <a href="{{ url_for('index') }}">戻る</a>
+
+    <!-- フッター -->
+    <footer class="header-footer text-white text-center py-3">
+        <p class="mb-0">&copy;2025 小松農園</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+
 </body>
 </html>
