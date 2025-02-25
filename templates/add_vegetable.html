@@ -21,18 +21,24 @@
     </header>
     
     <!-- 商品を追加 -->
-    <h1>商品を追加</h1>
-    <form method="POST">
-        <label>名前：</label><input type="text" name="name" required><br>
-        <label>価格：</label><input type="number" name="price" required><br>
-        <label>説明：</label><input type="text" name="description"><br>
-        <label>在庫：</label><input type="number" name="stock" required><br>
-        <button type="submit">登録</button>
-    </form>
-    <a href="{{ url_for('index') }}">戻る</a>
+    <div class="container-custom">
+        <h1 class="text-start mt-5">商品を追加</h1>
+        <form method="POST" class="form-container text-start">
+            <label>名前：</label><input type="text" name="name" required class="form-control mb-2"><br>
+            <label>価格：</label><input type="number" name="price" required class="form-control mb-2"><br>
+            <label>説明：</label><input type="text" name="description" class="form-control mb-2"><br>
+            <label>在庫：</label><input type="number" name="stock" required class="form-control mb-2"><br>
+            <button type="submit" class="btn btn-primary mt-2">登録</button>
+        </form>
+
+        <!-- 戻るボタン -->
+        <div class="mt-5"> <!-- 100px のマージン -->
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">TOP戻る</a>
+        </div>
+    </div>
 
     <!-- フッター -->
-    <footer class="header-footer text-white text-center py-3">
+    <footer class="header-footer text-white text-center py-3 mt-5">
         <p class="mb-0">&copy;2025 小松農園</p>
     </footer>
 
