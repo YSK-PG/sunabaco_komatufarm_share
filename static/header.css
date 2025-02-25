@@ -1,0 +1,5 @@
+/* header.css: ヘッダー・フッターのスタイル */
+.header-footer {
+    background: linear-gradient(to bottom, black 70%, red 30%);
+    color: white;
+}
