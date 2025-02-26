@@ -2,30 +2,68 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>注文ページ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小松農園TOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
-    <h1>注文ページ（社員用）</h1>
-    <table border="1">
-        <tr>
-            <th>名前</th>
-            <th>価格</th>
-            <th>説明</th>
-            <th>在庫</th>
-            <th>操作</th>
-        </tr>
-        {% for vegetable in vegetables %}
-        <tr>
-            <td>{{ vegetable.name }}</td>
-            <td>{{ vegetable.price }}</td>
-            <td>{{ vegetable.description }}</td>
-            <td>{{ vegetable.stock }}</td>
-            <td>
-                <a href="{{ url_for('order_vegetable', vegetable_id=vegetable.id) }}">注文</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    <a href="{{ url_for('index') }}">戻る</a>
+    <!-- ヘッダー -->
+    <header class="header-footer text-white py-3">
+        <div class="container-custom d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='images/komatufarm_logo.png') }}" alt="小松農園ロゴ" class="logo">
+                <h1 class="h4 mb-0">小松農園</h1>
+            </div>
+            <nav>
+                <a href="{{ url_for('order_page') }}" class="text-white me-3">TOP</a>
+                <a href="order-history.html" class="text-white me-3">注文履歴</a>
+                <a href="{{ url_for('admin') }}" class="text-white">管理者</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 注文ページ -->
+    <div class="container-custom">
+        <h1 class="text-start mt-5">注文受付中！</h1>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>名前</th>
+                        <th>価格</th>
+                        <th>説明</th>
+                        <th>在庫</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vegetable in vegetables %}
+                    <tr>
+                        <td>{{ vegetable.name }}</td>
+                        <td>{{ vegetable.price }} 円</td>
+                        <td>{{ vegetable.description }}</td>
+                        <td>{{ vegetable.stock }}</td>
+                        <td>
+                            <a href="{{ url_for('order_vegetable', vegetable_id=vegetable.id) }}" class="btn btn-success btn-sm">注文</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">現在、注文可能な商品がありません。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    <!-- フッター -->
+    <footer class="header-footer text-white text-center py-3 mt-5">
+        <p class="mb-0">&copy;2025 小松農園</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

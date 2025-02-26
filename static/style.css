@@ -8,12 +8,13 @@ body {
     padding: 0;
 }
 
+.logo {
+    width: 60px;  /* 幅を60pxに固定 */
+    height: 60px; /* 高さを60pxに固定 */
+    object-fit: contain; /* 画像の比率を保ちつつ収める */
+}
+
 .container-custom {
     max-width: 960px; /* 960px に調整 */
     margin: 0 auto; /* 中央寄せ */
-}
-
-.form-container {
-    max-width: 600px; /* フォームの幅をヘッダーと同じくらいに調整 */
-    margin-left: 20px; /* 左端に寄せる */
 }
