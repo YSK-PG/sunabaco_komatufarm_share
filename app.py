@@ -1,6 +1,9 @@
+import os
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
+from flask_migrate import Migrate  # 追加
 
 # Flaskアプリの作成
 app = Flask(__name__, template_folder="templates")
@@ -8,7 +11,15 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vegetable_app2.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# 画像のアップロード先を設定
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# データベースの初期化
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)  # 追加
 
 # データベースのモデル
 class Users(db.Model):
@@ -23,6 +34,7 @@ class Vegetables(db.Model):
     price = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=True)
     stock = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String(255), nullable=True)  # 画像ファイル名を保存
     producer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 class Orders(db.Model):
@@ -33,7 +45,7 @@ class Orders(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     order_date = db.Column(db.String(100), nullable=False)
 
-# データベースの初期化
+# データベースの初期化（マイグレーション後に適用）
 with app.app_context():
     db.create_all()
 
@@ -55,55 +67,59 @@ def add_vegetable():
         price = request.form.get('price')
         description = request.form.get('description')
         stock = request.form.get('stock')
-
+        image = request.files.get('image')
         if not name or not price or not stock:
             flash('すべての必須項目を入力してください。', 'danger')
             return redirect(url_for('add_vegetable'))
-
+        # 画像の保存
+        filename = None
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         new_vegetable = Vegetables(
             name=name,
             price=int(price),
             description=description,
             stock=int(stock),
+            image=filename,  # 画像ファイル名を保存
             producer_id=1  # 仮の生産者ID（適切に設定）
         )
         db.session.add(new_vegetable)
         db.session.commit()
         flash('商品が追加されました！', 'success')
         return redirect(url_for('admin'))
-
     return render_template('add_vegetable.html')
+
 
 # **📌 商品編集機能**
 @app.route('/edit/<int:vegetable_id>', methods=['GET', 'POST'])
 def edit_vegetable(vegetable_id):
-    vegetable = Vegetables.query.get(vegetable_id)
-
-    if vegetable is None:
-        flash("指定された野菜は存在しません。", "danger")
-        return redirect(url_for('admin'))
-
+    vegetable = Vegetables.query.get_or_404(vegetable_id)
     if request.method == 'POST':
         vegetable.name = request.form.get('name')
         vegetable.price = request.form.get('price')
         vegetable.description = request.form.get('description')
         vegetable.stock = request.form.get('stock')
-
+        image = request.files.get('image')
+        # 画像がアップロードされた場合は更新
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            vegetable.image = filename  # 画像ファイル名を保存
         db.session.commit()
-        flash('商品が更新されました！', 'success')
+        flash('商品情報が更新されました！', 'success')
         return redirect(url_for('admin'))
-
     return render_template('edit_vegetable.html', vegetable=vegetable)
 
 # **📌 商品削除機能**
 @app.route('/delete/<int:vegetable_id>', methods=['POST'])
 def delete_vegetable(vegetable_id):
-    vegetable = Vegetables.query.get(vegetable_id)
-
-    if vegetable is None:
-        flash("指定された野菜は存在しません。", "danger")
-        return redirect(url_for('admin'))
-
+    vegetable = Vegetables.query.get_or_404(vegetable_id)
+    # 画像ファイルを削除
+    if vegetable.image:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], vegetable.image)
+        if os.path.exists(image_path):
+            os.remove(image_path)
     db.session.delete(vegetable)
     db.session.commit()
     flash('商品が削除されました！', 'success')
